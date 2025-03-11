@@ -1,0 +1,15 @@
+POST http://localhost:5051/internal/api/worker/hash/crack/task
+Content-Type: application/xml
+<?xml version="1.0" encoding="UTF-8"?>
+<CrackHashManagerRequest>
+    <RequestId>123e4567-e89b-12d3-a456-426614174000</RequestId>
+    <PartNumber>1</PartNumber>
+    <PartCount>5</PartCount>
+    <Hash>5d41402abc4b2a76b9719d911017c592</Hash>
+    <MaxLength>8</MaxLength>
+    <Alphabet>
+        <symbols>a</symbols>
+        <symbols>b</symbols>
+        <symbols>c</symbols>
+    </Alphabet>
+</CrackHashManagerRequest>

@@ -1,0 +1,11 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+PATCH http://localhost:5050/internal/api/manager/hash/crack/request
+Content-Type: application/xml
+<?xml version="1.0" encoding="UTF-8"?>
+<CrackHashWorkerResponse>
+    <RequestId>123e4567-e89b-12d3-a456-426614174000</RequestId>
+    <PartNumber>1</PartNumber>
+    <Answers>
+        <words>abcd</words>
+    </Answers>
+</CrackHashWorkerResponse>

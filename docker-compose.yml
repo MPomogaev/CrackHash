@@ -1,0 +1,30 @@
+services:
+
+  worker:
+    image: ${DOCKER_REGISTRY-}worker
+    build:
+      context: .
+      dockerfile: Worker/Dockerfile
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks:
+      - crackhash_network
+  
+  manager:
+    image: ${DOCKER_REGISTRY-}manager
+    build:
+      context: .
+      dockerfile: Manager/Dockerfile
+    ports:
+      - 5050:8080
+    environment:
+      WorkersOptions__WorkerCount: 1
+      WorkersOptions__TimeoutInSeconds: 60
+    networks:
+      - crackhash_network
+
+networks:
+  crackhash_network:
+      driver: bridge
