@@ -1,14 +1,27 @@
 services:
+  mongo:
+    restart: always
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_DATABASE: CrackHash
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
+    networks:
+      - crackhash_network
 
   worker:
     image: ${DOCKER_REGISTRY-}worker
     build:
       context: .
       dockerfile: Worker/Dockerfile
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
+    #deploy:
+    #  replicas: 1
+    #  restart_policy:
+    #    condition: on-failure
     networks:
       - crackhash_network
   
@@ -21,10 +34,15 @@ services:
       - 5050:8080
     environment:
       WorkersOptions__WorkerCount: 1
-      WorkersOptions__TimeoutInSeconds: 60
+      WorkersOptions__TimeoutInSeconds: 20
+      CrackHashDatabaseOptions__ConnectionString: mongodb://root:rootpassword@mongo:27017
+      CrackHashDatabaseOptions__DatabaseName: CrackHash
     networks:
       - crackhash_network
 
 networks:
   crackhash_network:
       driver: bridge
+
+volumes:
+  mongodb_data_container:

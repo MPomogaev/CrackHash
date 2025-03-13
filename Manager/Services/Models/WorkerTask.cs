@@ -1,12 +1,15 @@
 ﻿using Common;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace Manager.Services.Models
 {
     public class WorkerTask
     {
+        [BsonId]
+        [BsonGuidRepresentation(GuidRepresentation.Standard)]
         public Guid RequestId { get; set; }
         public RequestState State { get; set; } = RequestState.InProgress;
-        public DateTime StartTime { get; set; }
         public int ExpectedPartsCount { get; set; }
         public HashSet<CrackHashWorkerResponse> ReceivedParts { get; set; } = new();
 

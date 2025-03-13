@@ -38,8 +38,7 @@ namespace Manager.Controllers {
         public CrackResponse Crack([FromBody] CrackRequest crackRequest) {
             _logger.LogInformation("started crack for hash " + crackRequest.Hash);
 
-            var workerTask = _workerTaskService.CreateTask();
-            workerTask.ExpectedPartsCount = _workersCount;
+            var workerTask = _workerTaskService.CreateTask(_workersCount);
 
             for (int i = 0; i < _workersCount; i++) {
                 var request = new CrackHashManagerRequest {
