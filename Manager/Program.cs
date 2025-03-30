@@ -4,6 +4,7 @@ using Manager.Services;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson;
+using Manager.RabbitMQ;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,12 +20,15 @@ builder.Services.AddHttpClient();
 
 builder.Services.Configure<WorkersOptions>(builder.Configuration.GetSection("WorkersOptions"));
 builder.Services.Configure<CrackHashDatabaseOptions>(builder.Configuration.GetSection("CrackHashDatabaseOptions"));
+builder.Services.Configure<RabbitMQServiceOptions>(builder.Configuration.GetSection("RabbitMQServiceOptions"));
 
+builder.Services.AddTransient<IRabbitMQService, RabbitMQService>();
 builder.Services.AddTransient<ICrackHashDatabase,  CrackHashDatabase>();
 builder.Services.AddSingleton<IWorkerTaskService, WorkerTaskService>();
-builder.Services.AddSingleton<IWorkerClient, WorkerClient>();
-builder.Services.AddTransient<IWorkerApiService, WorkerApiService>();
 builder.Services.AddTransient<ITimeoutService, TimeoutService>();
+
+builder.Services.AddHostedService<RabbitMQConsumerService>();
+builder.Services.AddHostedService<PendingTasksService>();
 
 BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 

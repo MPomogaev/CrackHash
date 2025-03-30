@@ -72,12 +72,14 @@ namespace Worker.Services.Crack
         }
 
         private void NextWord() {
-            int lastSymbol = 0;
-            while (_symbolsIndexes[lastSymbol] + 1 == _alphabet.Count) {
-                _symbolsIndexes[lastSymbol] = 0;
-                lastSymbol++;
+            int i = 0;
+            for (; _symbolsIndexes[i] + 1 == _alphabet.Count && i < _symbolsIndexes.Count; ++i) {
+                _symbolsIndexes[i] = 0;
             }
-            _symbolsIndexes[lastSymbol]++;
+
+            if (i < _symbolsIndexes.Count) {
+                _symbolsIndexes[i]++;
+            }
         }
     }
 }

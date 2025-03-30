@@ -1,2 +1,2 @@
 # For more info on HTTP files go to https://aka.ms/vs/httpfile
-GET http://localhost:5050/api/hash/status?requestId=c2b78e85-4d9d-432a-919f-e451f6c428dc
+GET http://localhost:12345/api/hash/status?requestId=8f69e353-55cc-44ae-b0c8-064910b8953a

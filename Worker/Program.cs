@@ -1,3 +1,4 @@
+using Worker.RabbitMQ;
 using Worker.Services;
 using Worker.Services.Crack;
 
@@ -13,11 +14,14 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpClient();
 
-builder.Services.AddSingleton<IManagerClient, ManagerClient>();
-builder.Services.AddTransient<IManagerApiService, ManagerApiService>();
+builder.Services.Configure<RabbitMQServiceOptions>(builder.Configuration.GetSection("RabbitMQServiceOptions"));
+
+builder.Services.AddSingleton<IRabbitMQService, RabbitMQService>();
 builder.Services.AddTransient<IWordHandler, WordHandler>();
 builder.Services.AddTransient<ICrackService, CrackService>();
 builder.Services.AddTransient<IWorkerService, WorkerService>();
+
+builder.Services.AddHostedService<RabbitMQConsumerService>();
 
 var app = builder.Build();
 

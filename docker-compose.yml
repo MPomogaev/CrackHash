@@ -1,27 +1,88 @@
 services:
-  mongo:
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
     restart: always
+    ports:
+      - "5672:5672"  
+      - "15672:15672" 
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq  
+    networks:
+      - crackhash_network
+
+  mongo1:
+    container_name: mongo1
     image: mongo:latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootpassword
       MONGO_INITDB_DATABASE: CrackHash
-    ports:
-      - 27017:27017
     volumes:
-      - mongodb_data_container:/data/db
+      - mongo1_data_container:/data/db
+      - ./rs-init.sh:/scripts/rs-init.sh
     networks:
       - crackhash_network
+    ports:
+      - 27021:27017
+    links:
+      - mongo2
+      - mongo3
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
+
+  mongo2:
+    container_name: mongo2
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_DATABASE: CrackHash
+    volumes:
+      - mongo2_data_container:/data/db
+    networks:
+      - crackhash_network
+    ports:
+      - 27022:27017
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
+
+  mongo3:
+    container_name: mongo3
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_DATABASE: CrackHash
+    volumes:
+      - mongo3_data_container:/data/db
+    networks:
+      - crackhash_network
+    ports:
+      - 27023:27017
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
 
   worker:
     image: ${DOCKER_REGISTRY-}worker
     build:
       context: .
       dockerfile: Worker/Dockerfile
-    #deploy:
-    #  replicas: 1
-    #  restart_policy:
-    #    condition: on-failure
+    restart: always
+    depends_on: [ rabbitmq ]
+    environment:
+      RabbitMQServiceOptions__HostName: rabbitmq
+      RabbitMQServiceOptions__TasksQueueName: Tasks
+      RabbitMQServiceOptions__AnswersQueueName: Answers
+      RabbitMQServiceOptions__UserName: user
+      RabbitMQServiceOptions__Password: password
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
     networks:
       - crackhash_network
   
@@ -30,13 +91,20 @@ services:
     build:
       context: .
       dockerfile: Manager/Dockerfile
+    restart: always
+    depends_on: [ rabbitmq, mongo1 ]
     ports:
-      - 5050:8080
+      - 12345:8080
     environment:
-      WorkersOptions__WorkerCount: 1
-      WorkersOptions__TimeoutInSeconds: 20
-      CrackHashDatabaseOptions__ConnectionString: mongodb://root:rootpassword@mongo:27017
+      WorkersOptions__WorkerCount: 2
+      WorkersOptions__TimeoutInSeconds: 60
+      CrackHashDatabaseOptions__ConnectionString: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/CrackHash?replicaSet=dbrs
       CrackHashDatabaseOptions__DatabaseName: CrackHash
+      RabbitMQServiceOptions__HostName: rabbitmq
+      RabbitMQServiceOptions__TasksQueueName: Tasks
+      RabbitMQServiceOptions__AnswersQueueName: Answers
+      RabbitMQServiceOptions__UserName: user
+      RabbitMQServiceOptions__Password: password
     networks:
       - crackhash_network
 
@@ -45,4 +113,7 @@ networks:
       driver: bridge
 
 volumes:
-  mongodb_data_container:
+  mongo1_data_container:
+  mongo2_data_container:
+  mongo3_data_container:
+  rabbitmq_data:  

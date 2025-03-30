@@ -1,5 +1,5 @@
 # For more info on HTTP files go to https://aka.ms/vs/httpfile
-PATCH http://localhost:5050/internal/api/manager/hash/crack/request
+PATCH http://localhost:12345/internal/api/manager/hash/crack/request
 Content-Type: application/xml
 <?xml version="1.0" encoding="UTF-8"?>
 <CrackHashWorkerResponse>
